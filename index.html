@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X Clone - 10 Posts & 2 Ads</title>
+    <style>
+        body { margin: 0; background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; justify-content: center; }
+        .container { display: flex; width: 100%; max-width: 1250px; justify-content: center; }
+        
+        /* 左サイドバー */
+        .sidebar-left { width: 275px; padding: 10px; border-right: 1px solid #eff3f4; position: sticky; top: 0; height: 100vh; }
+        .nav-item { font-size: 20px; padding: 12px; border-radius: 99px; cursor: pointer; display: flex; align-items: center; transition: 0.2s; }
+        .nav-item:hover { background-color: #e7e7e8; }
+        .nav-icon { margin-right: 15px; font-size: 24px; }
+
+        /* 中央タイムライン */
+        .timeline { width: 600px; border-right: 1px solid #eff3f4; min-height: 100vh; }
+        header { position: sticky; top: 0; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); padding: 15px; font-size: 20px; font-weight: bold; border-bottom: 1px solid #eff3f4; z-index: 10; }
+        
+        /* 投稿と広告 */
+        .post { padding: 12px 16px; border-bottom: 1px solid #eff3f4; display: flex; cursor: pointer; transition: 0.2s; }
+        .post:hover { background-color: #f7f7f7; }
+        .ad { background-color: #fcfcfc; }
+        .ad-label { color: #536471; font-size: 13px; margin-bottom: 4px; display: flex; align-items: center; }
+
+        .user-icon { width: 48px; height: 48px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; }
+        .post-content { flex-grow: 1; }
+        .user-info { font-size: 15px; margin-bottom: 2px; }
+        .name { font-weight: bold; margin-right: 4px; }
+        .handle { color: #536471; }
+        .text { font-size: 15px; line-height: 20px; margin-bottom: 12px; white-space: pre-wrap; }
+
+        /* 右サイドバー */
+        .sidebar-right { width: 350px; padding: 10px 20px; position: sticky; top: 0; height: 100vh; }
+        .search-bar { background-color: #eff3f4; padding: 10px 20px; border-radius: 99px; margin-bottom: 15px; color: #536471; }
+
+        /* ボタンアクション */
+        .actions { display: flex; justify-content: space-between; max-width: 425px; margin-top: 10px; }
+        .action-btn { background: none; border: none; color: #536471; font-size: 14px; cursor: pointer; display: flex; align-items: center; padding: 5px; transition: 0.2s; }
+        .action-btn.liked { color: #f91880; }
+        .action-btn.reposted { color: #00ba7c; }
+        .action-btn:hover { background-color: rgba(29, 155, 240, 0.1); border-radius: 20px; }
+        .action-btn.liked:hover { background-color: rgba(249, 24, 128, 0.1); }
+        .count { margin-left: 8px; }
+
+        /* ナビゲーション項目の調整 */
+.nav-item {
+    font-size: 19px; /* 少しだけ小さくして本物感アップ */
+    padding: 9px 12px; /* 上下を12pxから6pxに減らして間隔を狭く */
+    border-radius: 99px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: 0.2s;
+    margin-bottom: 2px; /* 項目同士の微調整 */
+}
+
+/* 画像アイコンのサイズ調整 */
+.nav-img {
+    width: 24px;
+    height: 24px;
+    margin-right: 16px; /* 文字との間隔 */
+}
+
+/* ロゴ専用の調整 */
+.logo:hover {
+    background-color: rgba(15, 20, 25, 0.1);
+}
+
+/* アクションアイコンのサイズ */
+.action-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+    /* 画像の色をグレーっぽく見せるフィルター（任意） */
+    filter: opacity(0.8);
+}
+
+/* いいねされた時の画像の変化（JavaScriptと連動） */
+.action-btn.liked .action-icon {
+    /* ピンク赤系の色に変えるフィルター */
+    filter: invert(20%) sepia(80%) saturate(5000%) hue-rotate(330deg) brightness(95%) contrast(100%);
+}
+
+/* リポストされた時の画像の変化 */
+.action-btn.reposted .action-icon {
+    /* 緑系の色に変えるフィルター */
+    filter: invert(50%) sepia(90%) saturate(1000%) hue-rotate(100deg) brightness(90%) contrast(100%);
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: #536471;
+    transition: 0.2s;
+}
+
+/* ユーザーアイコン（丸い画像）の設定 */
+.user-icon-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin-right: 12px;
+    flex-shrink: 0;
+    object-fit: cover; /* 画像が歪まないように調整 */
+}
+
+/* 認証バッジの設定 */
+.verified-badge {
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    margin-right: 4px;
+    margin-top: -2px;
+}
+
+/* アクションボタン内のアイコン調整 */
+.action-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    filter: grayscale(100%) opacity(0.7); /* 少し薄いグレーにする */
+}
+
+/* ボタンを横並びに整列 */
+.actions {
+    display: flex;
+    justify-content: space-between;
+    max-width: 425px;
+    margin-top: 10px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    color: #536471;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 5px 8px;
+    transition: 0.2s;
+}
+
+/* ホバー時に青く光る（Xの再現） */
+.action-btn:hover {
+    background-color: rgba(29, 155, 240, 0.1);
+    border-radius: 99px;
+    color: #1d9bf0;
+}
+
+/* クリック時に色がつく設定 */
+.action-btn.active-repost { color: #00ba7c; }
+.action-btn.active-repost .action-icon { filter: invert(50%) sepia(90%) saturate(1000%) hue-rotate(100deg); }
+
+.action-btn.active-like { color: #f91880; }
+.action-btn.active-like .action-icon { filter: invert(20%) sepia(80%) saturate(5000%) hue-rotate(330deg); }
+
+/* サイドバー全体のスクロール制御（固定したまま中身をスクロール） */
+.sidebar-right {
+    width: 350px;
+    padding: 0 20px 20px 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+/* 検索バーの微調整 */
+.search-bar {
+    background-color: #eff3f4;
+    padding: 12px 20px;
+    border-radius: 99px;
+    margin: 5px 0 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+/* 各セクション（トレンド・おすすめ）の枠 */
+.sidebar-section {
+    background-color: #f7f9f9;
+    border-radius: 16px;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.sidebar-section h3 {
+    padding: 12px 16px;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+/* トレンド項目のデザイン */
+.trend-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.trend-item:hover { background-color: #eff1f1; }
+.trend-category { font-size: 13px; color: #536471; }
+.trend-name { font-size: 15px; font-weight: bold; margin: 2px 0; }
+.trend-meta { font-size: 13px; color: #536471; }
+
+/* ニュース項目のデザイン */
+.news-item {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.news-item:hover { background-color: #eff1f1; }
+.news-meta { font-size: 13px; color: #536471; }
+.news-title { font-size: 15px; font-weight: bold; padding-right: 8px; }
+.news-image { width: 68px; height: 68px; border-radius: 12px; flex-shrink: 0; }
+
+/* おすすめユーザーのデザイン */
+.recommend-user {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.recommend-user:hover { background-color: #eff1f1; }
+.user-icon-small { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; }
+.recommend-info { flex-grow: 1; }
+.name-small { font-weight: bold; font-size: 15px; }
+.handle-small { color: #536471; font-size: 14px; }
+.follow-btn {
+    background-color: #0f1419;
+    color: white;
+    border: none;
+    padding: 6px 16px;
+    border-radius: 99px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* 「さらに表示」ボタン */
+.show-more {
+    padding: 16px;
+    color: #1d9bf0;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.show-more:hover { background-color: #eff1f1; }
+
+/* 投稿内の画像デザイン */
+.post-media {
+    width: 100%;
+    max-height: 512px; /* 高くなりすぎないように制限 */
+    object-fit: cover; /* 枠に合わせて綺麗に収める */
+    border-radius: 16px; /* X特有の角丸 */
+    border: 1px solid #eff3f4; /* 薄い枠線 */
+    margin-top: 12px;
+    margin-bottom: 4px;
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 左ナビゲーション -->
+   <nav class="sidebar-left">
+    <!-- 一番上のロゴ -->
+    <div class="nav-item logo" style="font-size: 30px; padding: 4px 12px;">𝕏</div>
+
+    <!-- ホーム（太字にしました） -->
+    <div class="nav-item">
+        <img src="https://cdn-icons-png.flaticon.com/512/1946/1946436.png" class="nav-img">
+        <span style="font-weight: bold;">ホーム</span>
+    </div>
+
+    <!-- 話題を検索 -->
+    <div class="nav-item">
+        <img src="https://cdn-icons-png.flaticon.com/512/482/482631.png" class="nav-img">
+        <span>話題を検索</span>
+    </div>
+
+    <!-- 通知 -->
+    <div class="nav-item">
+        <img src="https://cdn-icons-png.flaticon.com/512/3119/3119338.png" class="nav-img">
+        <span>通知</span>
+    </div>
+
+    <!-- メッセージ（白抜きアイコンに変更しました） -->
+    <div class="nav-item">
+        <img src="fukidashi.png" class="nav-img">
+        <span>メッセージ</span>
+    </div>
+
+    <!-- Grok（ご準備いただいた画像のファイル名に書き換えてください） -->
+    <div class="nav-item">
+        <img src="grok.png" class="nav-img">
+        <span>Grok</span>
+    </div>
+
+    <!-- ブックマーク（白抜きアイコンに変更しました） -->
+    <div class="nav-item">
+        <img src="bookmark.png" class="nav-img">
+        <span>ブックマーク</span>
+    </div>
+
+    <!-- クリエイタースタジオ -->
+    <div class="nav-item">
+        <img src="creat.png" class="nav-img">
+        <span>クリエイタースタジオ</span>
+    </div>
+
+    <!-- プレミアム（左上の𝕏と同じテキストを使用し、画像サイズに合わせて配置しました） -->
+    <div class="nav-item">
+        <div class="nav-img" style="font-size: 24px; display: flex; align-items: center; justify-content: center;">𝕏</div>
+        <span>プレミアム</span>
+    </div>
+
+    <!-- プロフィール -->
+    <div class="nav-item">
+        <img src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" class="nav-img">
+        <span>プロフィール</span>
+    </div>
+
+    <!-- もっと見る -->
+    <div class="nav-item">
+        <img src="https://cdn-icons-png.flaticon.com/512/2311/2311524.png" class="nav-img">
+        <span>もっと見る</span>
+    </div>
+
+    <button style="background:#1d9bf0; color:white; border:none; padding:12px; width:90%; border-radius:99px; font-weight:bold; font-size:17px; margin-top:10px; cursor:pointer;">ポストする</button>
+</nav>
+
+        <!-- メインタイムライン -->
+        <main class="timeline">
+            <header>ホーム</header>
+
+        </main>
+
+        <!-- 右サイドバー -->
+       <!-- 右サイドバー -->
+<aside class="sidebar-right">
+    <!-- 検索バー -->
+    <div class="search-bar">
+        <span style="margin-right: 10px;">🔍</span> 検索
+    </div>
+
+    <!-- いまを見つけよう（トレンド） -->
+    <div class="sidebar-section">
+        <h3>「いま」を見つけよう</h3>
+        <div class="trend-item">
+            <div class="trend-category">政治・トレンド</div>
+            <div class="trend-name">尾野嘉邦</div>
+            <div class="trend-meta">1.2万件のポスト</div>
+        </div>
+        <div class="trend-item">
+            <div class="trend-category">ビジネス・トレンド</div>
+            <div class="trend-name">HTML・CSS演習</div>
+            <div class="trend-meta">2,500件のポスト</div>
+        </div>
+        <div class="trend-item">
+            <div class="trend-category">テクノロジー・トレンド</div>
+            <div class="trend-name">JavaScript</div>
+            <div class="trend-meta">8.4万件のポスト</div>
+        </div>
+        <div class="show-more">さらに表示</div>
+    </div>
+
+    <!-- 本日のニュース -->
+    <div class="sidebar-section">
+        <h3>本日のニュース</h3>
+        <div class="news-item">
+            <div class="news-content">
+                <div class="news-meta">LIVE</div>
+                <div class="news-title">早稲田大学のキャンパス周辺で新しいカフェがオープン</div>
+            </div>
+            <div class="news-image" style="background-color: #ddd;"></div>
+        </div>
+        <div class="news-item">
+            <div class="news-content">
+                <div class="news-meta">ニュース · 2時間前</div>
+                <div class="news-title">次世代のWebデザイン・フレームワークが発表される</div>
+            </div>
+            <div class="news-image" style="background-color: #ddd;"></div>
+        </div>
+        <div class="show-more">さらに表示</div>
+    </div>
+
+    <!-- おすすめユーザー -->
+    <div class="sidebar-section">
+        <h3>おすすめユーザー</h3>
+        <div class="recommend-user">
+            <img src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" class="user-icon-small">
+            <div class="recommend-info">
+                <div class="name-small">公式ニュース</div>
+                <div class="handle-small">@official_news</div>
+            </div>
+            <button class="follow-btn">フォロー</button>
+        </div>
+        <div class="recommend-user">
+            <img src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" class="user-icon-small">
+            <div class="recommend-info">
+                <div class="name-small">テック情報局</div>
+                <div class="handle-small">@tech_info</div>
+            </div>
+            <button class="follow-btn">フォロー</button>
+        </div>
+        <div class="show-more">さらに表示</div>
+    </div>
+</aside>
+    </div>
+
+    <!-- JS（いいね・リポスト機能） -->
+    <script>
+       function handleAction(btn, type) {
+    // 【追加】コメントとビューの場合は、ここで処理を中断させる
+    if (type === 'comment' || type === 'view') {
+        return; 
+    }
+
+    const countElement = btn.querySelector('.count');
+    let rawText = countElement.innerText;
+    
+    // 数字の読み取り
+    let count;
+    if (rawText.includes('万')) {
+        count = parseFloat(rawText.replace('万', '')) * 10000;
+    } else {
+        count = parseInt(rawText.replace(/,/g, '')) || 0;
+    }
+
+    const activeClass = `active-${type}`;
+
+    // リポストといいねだけがここを通る
+    if (btn.classList.contains(activeClass)) {
+        btn.classList.remove(activeClass);
+        count--;
+    } else {
+        btn.classList.add(activeClass);
+        count++;
+    }
+
+    // 表示を戻す
+    if (count >= 10000) {
+        countElement.innerText = (Math.floor(count / 1000) / 10) + "万";
+    } else {
+        countElement.innerText = count.toLocaleString();
+    }
+}
+        // 投稿データのリスト
+const postsData = [
+    { name: "尾野嘉邦", handle: "@YoshikuniOno", text: "みんなA+でいいや", icon: "ono.jpg", badge: true, comment: 12, repost: 51, like: 4817, view: "1.2万", postImage: null  },
+    { name: "A", handle: "@cat_love", text: "今日の猫です。🐈", icon: "cat.png", badge: false, comment: 0, repost: 1, like: 7, view: "213", postImage: null  },
+    { name: "B", handle: "@gadget", text: "新しいキーボード最高！", icon: "pc.png", badge: true, comment: 12, repost: 51, like: 4817, view: "1.2万", postImage: null  },
+    { name: "C", handle: "@lunch", text: "今日のオムライス。🍳", icon: "food.png", badge: false, comment: 12, repost: 51, like: 4817, view: "1.2万", postImage: null  },
+    { name: "早稲田大学", handle: "@mwaseda_univ", text: "早稲田大学、最高！", icon: "wsd.png", badge: true, comment: 12, repost: 51, like: 4817, view: "1.2万", postImage: "waseda.jpeg" },
+    { name: "自民党", handle: "@travel", text: "沖縄の海、綺麗すぎ。🏝️", icon: "sea.png", badge: true, comment: 12, repost: 51, like: 4817, view: "1.2万", postImage: null  },
+    { name: "札幌市", handle: "@news", text: "最新のスマホが発表されました。", icon: "news.png", badge: true, comment: 12, repost: 51, like: 4817, view: "1.2万", postImage: null  },
+    { name: "朝日新聞", handle: "@weather", text: "明日は全国的に晴れ！☀️", icon: "sun.png", badge: false, comment: 12, repost: 51, like: 4817, view: "1.2万", postImage: null  },
+    { name: "D", handle: "@tired", text: "今日も一日お疲れ様でした。🍺", icon: "beer.png", badge: false, comment: 12, repost: 51, like: 4817, view: "1.2万", postImage: null  },
+    { name: "E", handle: "@words", text: "「継続は力なり」", icon: "memo.png", badge: false, comment: 12, repost: 51, like: 4817, view: "1.2万", postImage: null  }
+];
+
+// 配列をシャッフルする関数
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+// 画面を表示する関数
+function renderTimeline() {
+    const timeline = document.querySelector('.timeline');
+    // ヘッダーだけ残して中身をクリア
+    const header = timeline.querySelector('header').outerHTML;
+    timeline.innerHTML = header;
+
+    // 投稿をシャッフル
+    shuffle(postsData);
+
+    // 投稿と広告を順番に入れていく
+    postsData.forEach((post, index) => {
+        // 投稿を表示
+        timeline.innerHTML += createPostHTML(post);
+
+        // 3番目と7番目に広告を入れる例
+        if (index === 2 || index === 6) {
+            timeline.innerHTML += createAdHTML();
+        }
+    });
+}
+
+// 投稿のHTMLを作る関数
+function createPostHTML(post) {
+    const badgeHTML = post.badge ? '<img src="https://img.icons8.com/color/48/verified-badge.png" class="verified-badge">' : '';
+    
+    return `
+        <div class="post">
+            <img src="${post.icon}" class="user-icon-img">
+            <div class="post-content">
+                <div class="user-info">
+                    <span class="name">${post.name}</span>${badgeHTML}
+                    <span class="handle">${post.handle}</span>
+                </div>
+                <div class="text">${post.text}</div>
+                <div class="actions">
+                    <!-- コメント -->
+                    <button class="action-btn" onclick="handleAction(this, 'comment')">
+                        <img src="https://img.icons8.com/material-outlined/24/536471/speech-bubble--v1.png" class="action-icon">
+                        <span class="count">${post.comment}</span>
+                    </button>
+                    <!-- リポスト -->
+                    <button class="action-btn" onclick="handleAction(this, 'repost')">
+                        <img src="https://img.icons8.com/material-outlined/24/536471/retweet.png" class="action-icon">
+                        <span class="count">${post.repost}</span>
+                    </button>
+                    <!-- いいね -->
+                    <button class="action-btn" onclick="handleAction(this, 'like')">
+                        <img src="https://img.icons8.com/material-outlined/24/536471/like--v1.png" class="action-icon">
+                        <span class="count">${post.like}</span>
+                    </button>
+                    <!-- ビュー -->
+                    <button class="action-btn" onclick="handleAction(this, 'view')">
+                        <img src="https://img.icons8.com/material-outlined/24/536471/bar-chart.png" class="action-icon">
+                        <span class="count">${post.view}</span>
+                    </button>
+                </div>
+            </div>
+        </div>`;
+}
+
+// 広告のHTMLを作る関数
+function createAdHTML() {
+    return `
+        <div class="post ad">
+            <div class="user-icon" style="background-color: #000; width:48px; height:48px; border-radius:50%; margin-right:12px;"></div>
+            <div class="post-content">
+                <div class="ad-label">🚀 プロモーション</div>
+                <div class="user-info"><span class="name">スポンサー企業</span></div>
+                <div class="text">ここに広告が入ります。シャッフルしても場所は変わりません。</div>
+            </div>
+        </div>`;
+}
+
+function createPostHTML(post) {
+    const badgeHTML = post.badge ? '<img src="https://img.icons8.com/color/48/verified-badge.png" class="verified-badge">' : '';
+    
+    // 【修正】画像がある場合だけ <img> タグを作る
+    let imageHTML = '';
+    if (post.postImage) {
+        imageHTML = `<img src="${post.postImage}" class="post-media">`;
+    }
+    
+    return `
+        <div class="post">
+            <img src="${post.icon}" class="user-icon-img">
+            <div class="post-content">
+                <div class="user-info">
+                    <span class="name">${post.name}</span>${badgeHTML}
+                    <span class="handle">${post.handle}</span>
+                </div>
+                <div class="text">${post.text}</div>
+                
+                ${imageHTML} <!-- ここに画像が挿入される -->
+
+                <div class="actions">
+                    <button class="action-btn" onclick="handleAction(this, 'comment')">
+                        <img src="https://img.icons8.com/material-outlined/24/536471/speech-bubble--v1.png" class="action-icon">
+                        <span class="count">${post.comment}</span>
+                    </button>
+                    <button class="action-btn" onclick="handleAction(this, 'repost')">
+                        <img src="https://img.icons8.com/material-outlined/24/536471/retweet.png" class="action-icon">
+                        <span class="count">${post.repost}</span>
+                    </button>
+                    <button class="action-btn" onclick="handleAction(this, 'like')">
+                        <img src="https://img.icons8.com/material-outlined/24/536471/like--v1.png" class="action-icon">
+                        <span class="count">${post.like}</span>
+                    </button>
+                    <button class="action-btn" onclick="handleAction(this, 'view')">
+                        <img src="https://img.icons8.com/material-outlined/24/536471/bar-chart.png" class="action-icon">
+                        <span class="count">${post.view}</span>
+                    </button>
+                </div>
+            </div>
+        </div>`;
+}
+
+// ページを読み込んだ時に実行
+window.onload = renderTimeline;
+    </script>
+</body>
+</html>
